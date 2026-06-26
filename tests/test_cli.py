@@ -1,5 +1,8 @@
 from pathlib import Path
 
+import pytest
+
+from envdoctor import __version__
 from envdoctor.cli import main
 
 
@@ -57,3 +60,39 @@ def test_terminal_report_groups_diagnosis_by_key(tmp_path: Path, capsys) -> None
     assert "Possible typo:" in output
     assert "Checked:" in output
     assert "Suggested fix:" in output
+
+
+def test_cli_version(capsys) -> None:
+    with pytest.raises(SystemExit) as exc:
+        main(["--version"])
+
+    output = capsys.readouterr().out
+
+    assert exc.value.code == 0
+    assert f"envdoctor {__version__}" in output
+
+
+def test_cli_help_mentions_check_and_no_shell(capsys) -> None:
+    with pytest.raises(SystemExit) as exc:
+        main(["check", "--help"])
+
+    output = capsys.readouterr().out
+
+    assert exc.value.code == 0
+    assert "Compare shell env, .env, .env.example, and Python code" in output
+    assert "--no-shell" in output
+    assert "--strict" in output
+
+
+def test_cli_no_shell_ignores_shell_environment(tmp_path: Path, monkeypatch, capsys) -> None:
+    (tmp_path / ".env.example").write_text("DATABASE_URL=\n", encoding="utf-8")
+    (tmp_path / ".env").write_text("", encoding="utf-8")
+    (tmp_path / "app.py").write_text('import os\nDATABASE_URL = os.environ["DATABASE_URL"]\n', encoding="utf-8")
+    monkeypatch.setenv("DATABASE_URL", "postgres://shell/app")
+
+    exit_code = main(["check", str(tmp_path), "--no-shell"])
+    output = capsys.readouterr().out
+
+    assert exit_code == 1
+    assert "shell environment: ignored (--no-shell)" in output
+    assert "present in your shell environment" not in output

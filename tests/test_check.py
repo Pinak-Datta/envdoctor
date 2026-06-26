@@ -66,6 +66,19 @@ def test_run_check_reports_when_missing_key_exists_in_shell(tmp_path: Path) -> N
     assert "CI/Docker" in finding.suggestion
 
 
+def test_run_check_can_ignore_shell_environment(tmp_path: Path) -> None:
+    (tmp_path / ".env.example").write_text("DATABASE_URL=\n", encoding="utf-8")
+    (tmp_path / ".env").write_text("", encoding="utf-8")
+    (tmp_path / "app.py").write_text('import os\nDATABASE_URL = os.environ["DATABASE_URL"]\n', encoding="utf-8")
+
+    result = run_check(tmp_path, environ={"DATABASE_URL": "postgres://shell/app"}, include_shell=False)
+    finding = next(finding for finding in result.findings if finding.code == "missing_key")
+
+    assert result.shell_env == {}
+    assert "shell environment: ignored" in finding.details
+    assert "present in your shell environment" not in finding.message
+
+
 def test_optional_code_usage_does_not_fail_when_absent(tmp_path: Path) -> None:
     (tmp_path / ".env.example").write_text("", encoding="utf-8")
     (tmp_path / ".env").write_text("", encoding="utf-8")

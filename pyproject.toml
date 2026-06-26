@@ -21,17 +21,23 @@ classifiers = [
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
   "Topic :: Software Development :: Quality Assurance",
   "Topic :: Utilities",
 ]
 dependencies = []
 
+[project.urls]
+Homepage = "https://github.com/Pinak-Datta/envdoctor"
+Repository = "https://github.com/Pinak-Datta/envdoctor"
+Issues = "https://github.com/Pinak-Datta/envdoctor/issues"
+Changelog = "https://github.com/Pinak-Datta/envdoctor/blob/main/CHANGELOG.md"
+
 [project.scripts]
 envdoctor = "envdoctor.cli:main"
 
 [project.optional-dependencies]
-dev = ["pytest>=8.0"]
+dev = ["build>=1.2", "pytest>=8.0", "twine>=5.0"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-

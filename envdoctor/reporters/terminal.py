@@ -109,7 +109,7 @@ def _finding_sort_key(finding: Finding) -> tuple[int, str, int]:
 def _checked_lines(key: str, result: CheckResult) -> list[str]:
     return [
         "      Checked:",
-        f"        shell environment: {'found' if key in result.shell_env else 'not found'}",
+        f"        shell environment: {_shell_key_status(key, result)}",
         f"        .env: {_env_file_status(key, result.env_path, result.env_file.values)}",
         f"        .env.example: {_env_file_status(key, result.example_path, result.example_file.values)}",
         f"        Python code: {_code_status(key, result)}",
@@ -127,6 +127,8 @@ def _dotenv_summary(path: Path, count: int) -> str:
 
 
 def _shell_summary(result: CheckResult) -> str:
+    if not result.include_shell:
+        return "ignored (--no-shell)"
     if not result.expected_keys:
         return f"available ({len(result.shell_env)} variable(s))"
     found = sum(1 for key in result.expected_keys if key in result.shell_env)
@@ -137,6 +139,12 @@ def _env_file_status(key: str, path: Path, values: dict) -> str:
     if not path.exists():
         return "file not found"
     return "found" if key in values else "not found"
+
+
+def _shell_key_status(key: str, result: CheckResult) -> str:
+    if not result.include_shell:
+        return "ignored"
+    return "found" if key in result.shell_env else "not found"
 
 
 def _code_status(key: str, result: CheckResult) -> str:

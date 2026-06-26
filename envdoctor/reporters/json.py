@@ -16,7 +16,7 @@ def render_json(result: CheckResult) -> str:
             "example": _file_info(result.example_path),
         },
         "shell": {
-            "available": True,
+            "checked": result.include_shell,
             "expected_keys_found": sorted(key for key in result.expected_keys if key in result.shell_env),
             "expected_keys_missing": sorted(key for key in result.expected_keys if key not in result.shell_env),
         },

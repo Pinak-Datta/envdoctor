@@ -1,0 +1,43 @@
+name: Bug report
+description: Report a bug in envdoctor.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for helping make envdoctor sharper.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Tell us what envdoctor did and what you expected instead.
+      placeholder: envdoctor reported X, but I expected Y.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Reproduction
+      description: Include the smallest `.env`, `.env.example`, and Python snippet that reproduces it.
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: envdoctor output
+      description: Paste the relevant output. Please redact real secrets.
+      render: shell
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: envdoctor version
+      placeholder: envdoctor --version
+  - type: input
+    id: python-version
+    attributes:
+      label: Python version
+      placeholder: python --version
+

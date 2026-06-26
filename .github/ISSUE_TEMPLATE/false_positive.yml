@@ -1,0 +1,32 @@
+name: Config false positive
+description: Report a case where envdoctor warns incorrectly.
+title: "[False positive]: "
+labels: ["false-positive"]
+body:
+  - type: markdown
+    attributes:
+      value: False positives are especially useful for keeping envdoctor practical.
+  - type: textarea
+    id: finding
+    attributes:
+      label: Finding
+      description: Which envdoctor finding seems wrong?
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Why is it valid in your project?
+      description: Explain the framework pattern, default, alias, or deployment behavior envdoctor missed.
+    validations:
+      required: true
+  - type: textarea
+    id: minimal-example
+    attributes:
+      label: Minimal example
+      description: Include redacted config/code that reproduces the false positive.
+      render: shell
+    validations:
+      required: true
+

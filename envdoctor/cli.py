@@ -14,7 +14,12 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     if args.command == "check":
-        result = run_check(Path(args.path), env_file=args.env_file, example_file=args.example_file)
+        result = run_check(
+            Path(args.path),
+            env_file=args.env_file,
+            example_file=args.example_file,
+            include_shell=not args.no_shell,
+        )
         strict = args.strict or args.ci
         output = render_json(result) if args.format == "json" else render_terminal(result, strict=strict)
         print(output)
@@ -32,15 +37,25 @@ def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="envdoctor",
         description="Explain why your Python environment config is broken.",
+        epilog="Start with: envdoctor check",
     )
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     subparsers = parser.add_subparsers(dest="command")
 
-    check = subparsers.add_parser("check", help="diagnose .env, .env.example, and Python env usage")
-    check.add_argument("path", nargs="?", default=".", help="project directory to inspect")
-    check.add_argument("--env-file", default=".env", help="dotenv file to compare, relative to path")
-    check.add_argument("--example-file", default=".env.example", help="example dotenv file, relative to path")
-    check.add_argument("--format", choices=["terminal", "json"], default="terminal", help="output format")
+    check = subparsers.add_parser(
+        "check",
+        help="diagnose .env drift and Python environment variable usage",
+        description="Compare shell env, .env, .env.example, and Python code to explain config drift.",
+    )
+    check.add_argument("path", nargs="?", default=".", help="project directory to inspect (default: current directory)")
+    check.add_argument("--env-file", default=".env", help="dotenv file to compare, relative to PATH (default: .env)")
+    check.add_argument(
+        "--example-file",
+        default=".env.example",
+        help="documented dotenv example file, relative to PATH (default: .env.example)",
+    )
+    check.add_argument("--no-shell", action="store_true", help="ignore the current shell environment for deterministic checks")
+    check.add_argument("--format", choices=["terminal", "json"], default="terminal", help="output format (default: terminal)")
     check.add_argument("--json", action="store_const", const="json", dest="format", help="shortcut for --format json")
     check.add_argument("--strict", action="store_true", help="fail on warnings as well as errors")
     check.add_argument("--ci", action="store_true", help="CI-friendly alias for --strict")

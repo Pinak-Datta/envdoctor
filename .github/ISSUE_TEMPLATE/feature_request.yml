@@ -1,0 +1,27 @@
+name: Feature request
+description: Suggest a new envdoctor capability.
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What repeated config pain would this solve?
+      placeholder: I often hit this when...
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed behavior
+      description: What should envdoctor report or detect?
+    validations:
+      required: true
+  - type: textarea
+    id: example
+    attributes:
+      label: Example project shape
+      description: Include sample `.env`, code, Docker, CI, or framework config if relevant.
+      render: shell
+

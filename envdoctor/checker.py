@@ -40,6 +40,7 @@ class CheckResult:
     env_file: EnvFile
     example_file: EnvFile
     shell_env: dict[str, str]
+    include_shell: bool
     expected_keys: set[str]
     code_usages: list[CodeUsage]
     findings: list[Finding]
@@ -58,16 +59,17 @@ def run_check(
     env_file: str = ".env",
     example_file: str = ".env.example",
     environ: Mapping[str, str] | None = None,
+    include_shell: bool = True,
 ) -> CheckResult:
     root = root.resolve()
     env_path = root / env_file
     example_path = root / example_file
     actual = parse_dotenv(env_path)
     example = parse_dotenv(example_path)
-    shell_env = dict(os.environ if environ is None else environ)
+    shell_env = dict(os.environ if environ is None else environ) if include_shell else {}
     code_usages = scan_python_env_usage(root)
     expected = _expected_vars(example, code_usages)
-    findings = _build_findings(actual, example, expected, code_usages, shell_env)
+    findings = _build_findings(actual, example, expected, code_usages, shell_env, include_shell)
 
     return CheckResult(
         root=root,
@@ -76,6 +78,7 @@ def run_check(
         env_file=actual,
         example_file=example,
         shell_env=shell_env,
+        include_shell=include_shell,
         expected_keys=set(expected),
         code_usages=code_usages,
         findings=findings,
@@ -97,6 +100,7 @@ def _build_findings(
     expected: dict[str, ExpectedVar],
     code_usages: list[CodeUsage],
     shell_env: dict[str, str],
+    include_shell: bool,
 ) -> list[Finding]:
     findings: list[Finding] = []
     actual_values = actual.values
@@ -142,12 +146,12 @@ def _build_findings(
                 code="missing_key",
                 severity=Severity.ERROR if expected_var.required or expected_var.documented_in else Severity.WARNING,
                 title=f"{key} is missing from .env",
-                message=_missing_message(key, expected_var, shell_env),
+                message=_missing_message(key, expected_var, shell_env, include_shell),
                 key=key,
                 path=usage.path if usage else expected_var.documented_in,
                 line=usage.line if usage else None,
-                suggestion=_missing_suggestion(key, shell_env),
-                details=_checked_details(key, actual, example, shell_env) + _usage_details(expected_var.code_usages),
+                suggestion=_missing_suggestion(key, shell_env, include_shell),
+                details=_checked_details(key, actual, example, shell_env, include_shell) + _usage_details(expected_var.code_usages),
             )
         )
 
@@ -275,10 +279,10 @@ def _required_code_keys(usages: list[CodeUsage]) -> set[str]:
     return {usage.key for usage in usages if usage.required}
 
 
-def _missing_message(key: str, expected_var: ExpectedVar, shell_env: dict[str, str]) -> str:
+def _missing_message(key: str, expected_var: ExpectedVar, shell_env: dict[str, str], include_shell: bool) -> str:
     required_usage = _first_required_usage(expected_var.code_usages)
     shell_note = ""
-    if key in shell_env:
+    if include_shell and key in shell_env:
         shell_note = " It is present in your shell environment, so local commands may work while CI or Docker still fails."
     if required_usage:
         return f"{key} is required by {required_usage.source} in {required_usage.path.name}:{required_usage.line} but was not found in .env.{shell_note}"
@@ -287,18 +291,30 @@ def _missing_message(key: str, expected_var: ExpectedVar, shell_env: dict[str, s
     return f"{key} is expected but was not found in .env.{shell_note}"
 
 
-def _missing_suggestion(key: str, shell_env: dict[str, str]) -> str:
-    if key in shell_env:
+def _missing_suggestion(key: str, shell_env: dict[str, str], include_shell: bool) -> str:
+    if include_shell and key in shell_env:
         return f"Add {key}=... to .env or document how CI/Docker should provide it."
     return f"Add {key}=... to .env."
 
 
-def _checked_details(key: str, actual: EnvFile, example: EnvFile, shell_env: dict[str, str]) -> list[str]:
+def _checked_details(
+    key: str,
+    actual: EnvFile,
+    example: EnvFile,
+    shell_env: dict[str, str],
+    include_shell: bool,
+) -> list[str]:
     return [
-        f"shell environment: {'found' if key in shell_env else 'not found'}",
+        f"shell environment: {_shell_status(key, shell_env, include_shell)}",
         f".env: {_env_file_status(key, actual)}",
         f".env.example: {_env_file_status(key, example)}",
     ]
+
+
+def _shell_status(key: str, shell_env: dict[str, str], include_shell: bool) -> str:
+    if not include_shell:
+        return "ignored"
+    return "found" if key in shell_env else "not found"
 
 
 def _env_file_status(key: str, env_file: EnvFile) -> str:

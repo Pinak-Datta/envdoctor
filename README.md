@@ -94,6 +94,12 @@ Show machine-readable output:
 envdoctor check --json
 ```
 
+Ignore shell variables for deterministic CI checks:
+
+```console
+envdoctor check --no-shell
+```
+
 Fail on warnings as well as errors:
 
 ```console
@@ -157,6 +163,7 @@ Required vs optional behavior:
 | `envdoctor check --strict` | exits `1` when errors or warnings are present |
 | `envdoctor check --ci` | same as `--strict` |
 | `envdoctor check --json` | same pass/fail behavior, JSON output |
+| `envdoctor check --no-shell` | ignores current shell variables when diagnosing missing keys |
 
 Warnings do not fail a normal check unless `--strict` or `--ci` is used.
 
