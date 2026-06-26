@@ -1,38 +1,37 @@
 <svg width="1280" height="760" viewBox="0 0 1280 760" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
   <title id="title">envdoctor terminal diagnosis screenshot</title>
-  <desc id="desc">A terminal report showing envdoctor explaining a missing DATABASE_URL, a possible DB_URL typo, and suggested fixes.</desc>
+  <desc id="desc">A clean terminal report showing envdoctor explaining missing environment variables, shell drift, and a likely typo.</desc>
+
   <rect width="1280" height="760" rx="28" fill="#0F172A"/>
-  <rect x="34" y="34" width="1212" height="692" rx="18" fill="#111827" stroke="#334155" stroke-width="2"/>
-  <rect x="34" y="34" width="1212" height="58" rx="18" fill="#1F2937"/>
-  <circle cx="70" cy="63" r="9" fill="#F87171"/>
-  <circle cx="101" cy="63" r="9" fill="#FBBF24"/>
-  <circle cx="132" cy="63" r="9" fill="#34D399"/>
-  <text x="172" y="69" fill="#CBD5E1" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="18">envdoctor check examples/basic</text>
+  <rect x="48" y="46" width="1184" height="668" rx="18" fill="#111827" stroke="#334155" stroke-width="2"/>
+  <rect x="48" y="46" width="1184" height="62" rx="18" fill="#1F2937"/>
+  <path d="M48 90H1232V108H48V90Z" fill="#1F2937"/>
 
-  <text x="64" y="132" fill="#E5E7EB" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="24" font-weight="700">envdoctor check</text>
-  <text x="64" y="166" fill="#64748B" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="19">===============</text>
+  <circle cx="88" cy="77" r="9" fill="#F87171"/>
+  <circle cx="119" cy="77" r="9" fill="#FBBF24"/>
+  <circle cx="150" cy="77" r="9" fill="#34D399"/>
+  <text x="196" y="84" fill="#CBD5E1" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="18">envdoctor check examples/basic</text>
 
-  <text x="64" y="212" fill="#CBD5E1" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="19">Project: /path/to/project</text>
-  <text x="64" y="252" fill="#E5E7EB" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="19" font-weight="700">Checked:</text>
-  <text x="92" y="284" fill="#CBD5E1" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="18">shell environment: </text>
-  <text x="302" y="284" fill="#A7F3D0" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="18">available (1/4 expected key(s) found)</text>
-  <text x="92" y="314" fill="#CBD5E1" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="18">.env: found (3 key(s))</text>
-  <text x="92" y="344" fill="#CBD5E1" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="18">.env.example: found (3 key(s))</text>
-  <text x="92" y="374" fill="#CBD5E1" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="18">Python code: 3 env usage(s)</text>
+  <text x="88" y="154" fill="#F8FAFC" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="26" font-weight="700">envdoctor check</text>
+  <text x="88" y="188" fill="#64748B" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="18">===============</text>
 
-  <rect x="64" y="408" width="390" height="42" rx="8" fill="#1E293B"/>
-  <text x="84" y="435" fill="#FCA5A5" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="18" font-weight="700">Summary: 3 error(s), 3 warning(s)</text>
+  <text x="88" y="236" fill="#CBD5E1" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="18">Project: /path/to/project</text>
 
-  <text x="64" y="492" fill="#E5E7EB" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="20" font-weight="700">Diagnosis:</text>
-  <text x="92" y="532" fill="#93C5FD" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="20" font-weight="700">DATABASE_URL</text>
-  <text x="120" y="566" fill="#FCA5A5" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="18">! Missing value: DATABASE_URL is missing from .env (app.py:3)</text>
-  <text x="148" y="598" fill="#CBD5E1" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="17">required by os.environ["DATABASE_URL"], but not found in .env</text>
-  <text x="148" y="628" fill="#FDE68A" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="17">shell environment: found - local commands may work while CI/Docker fails</text>
-  <text x="148" y="658" fill="#A7F3D0" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="17">Suggested fix: Add DATABASE_URL=... to .env or document CI/Docker</text>
+  <text x="88" y="286" fill="#F8FAFC" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="19" font-weight="700">Checked:</text>
+  <text x="116" y="320" fill="#CBD5E1" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="18">shell environment:</text>
+  <text x="332" y="320" fill="#A7F3D0" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="18">available (1/4 expected found)</text>
+  <text x="116" y="352" fill="#CBD5E1" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="18">.env: found (3 key(s))</text>
+  <text x="116" y="384" fill="#CBD5E1" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="18">.env.example: found (3 key(s))</text>
+  <text x="116" y="416" fill="#CBD5E1" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="18">Python code: 3 env usage(s)</text>
 
-  <text x="720" y="532" fill="#93C5FD" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="20" font-weight="700">DB_URL</text>
-  <text x="748" y="566" fill="#FDE68A" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="18">~ Possible typo: DB_URL may be DATABASE_URL</text>
-  <text x="776" y="598" fill="#CBD5E1" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="17">.env contains DB_URL</text>
-  <text x="776" y="628" fill="#CBD5E1" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="17">.env.example expects DATABASE_URL</text>
-  <text x="776" y="658" fill="#A7F3D0" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="17">Suggested fix: Rename DB_URL to DATABASE_URL</text>
+  <rect x="88" y="450" width="402" height="44" rx="8" fill="#1E293B"/>
+  <text x="112" y="479" fill="#FCA5A5" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="18" font-weight="700">Summary: 3 error(s), 3 warning(s)</text>
+
+  <text x="88" y="536" fill="#F8FAFC" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="20" font-weight="700">Diagnosis:</text>
+
+  <rect x="116" y="558" width="1028" height="126" rx="10" fill="#172033" stroke="#334155"/>
+  <text x="144" y="592" fill="#93C5FD" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="19" font-weight="700">DATABASE_URL</text>
+  <text x="144" y="624" fill="#FCA5A5" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="17">! Missing value in .env</text>
+  <text x="144" y="652" fill="#CBD5E1" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="16">required by app.py:3, but not found in .env</text>
+  <text x="144" y="680" fill="#FDE68A" font-family="SFMono-Regular, Menlo, Consolas, monospace" font-size="16">shell has it; .env has DB_URL - typo risk</text>
 </svg>
