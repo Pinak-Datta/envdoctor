@@ -11,6 +11,21 @@ Find the gaps in your Python environment config.
 
 ![envgap terminal diagnosis screenshot](https://raw.githubusercontent.com/Pinak-Datta/envgap/main/docs/assets/envgap-terminal.svg)
 
+## Contents
+
+- [30-Second Demo](#30-second-demo)
+- [Why](#why)
+- [Install](#install)
+- [Quick Start](#quick-start)
+- [What It Checks Today](#what-it-checks-today)
+- [Exit Codes](#exit-codes)
+- [CI](#ci)
+- [Example Diagnosis](#example-diagnosis)
+- [Why Not Just python-dotenv?](#why-not-just-python-dotenv)
+- [Current Scope](#current-scope)
+- [Roadmap](#roadmap)
+- [Development](#development)
+
 ## 30-Second Demo
 
 Given a project with:
