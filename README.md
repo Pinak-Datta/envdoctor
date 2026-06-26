@@ -1,35 +1,38 @@
 # envdoctor
 
-envdoctor explains why your Python environment config is broken.
+Explain why your Python environment config is broken.
 
-It is not another `.env` loader. It is a diagnostic CLI for missing, duplicated, placeholder, undocumented, and misnamed environment variables across `.env`, `.env.example`, and Python code.
+`envdoctor` is a diagnostic CLI for Python projects that use `.env` files, `.env.example`, shell variables, and `os.environ` / `os.getenv` in code. It does not load your config. It tells you why your config is drifting, missing, duplicated, undocumented, placeholder-filled, or probably misspelled.
+
+![envdoctor terminal diagnosis screenshot](docs/assets/envdoctor-terminal.svg)
+
+## 30-Second Demo
 
 ```console
-$ envdoctor check
-envdoctor check
-===============
-
-Checked:
-  shell environment: available (0/3 expected key(s) found)
-  .env: found
-  .env.example: found
-  Python code: 3 env usage(s)
-
-Diagnosis:
-  DATABASE_URL
-    ! Missing value: DATABASE_URL is missing from .env (settings.py:2)
-      DATABASE_URL is required by os.environ["DATABASE_URL"] in settings.py:2 but was not found in .env.
-      Checked:
-        shell environment: not found
-        .env: not found
-        .env.example: found
-      Suggested fix: Add DATABASE_URL=... to .env.
-
-  DB_URL
-    ~ Possible typo: DB_URL may be a typo for DATABASE_URL (.env:1)
-      .env contains DB_URL, but the expected variable is DATABASE_URL.
-      Suggested fix: Rename DB_URL to DATABASE_URL if they represent the same setting.
+$ DATABASE_URL=postgres://shell/app envdoctor check examples/basic
 ```
+
+`envdoctor` compares your shell, `.env`, `.env.example`, and Python code, then explains the mismatch:
+
+- `DATABASE_URL` is required by `app.py`
+- it is missing from `.env`
+- it exists in your shell, so local commands may work while CI/Docker fails
+- `.env` has `DB_URL`, which is probably a typo
+- suggested fix: rename or document the variable source
+
+## Why
+
+Environment config bugs are boring until they eat an afternoon.
+
+Common examples:
+
+- The app expects `DATABASE_URL`, but `.env` contains `DB_URL`.
+- `.env.example` says a key exists, but local `.env` never got it.
+- A secret is still set to `changeme`.
+- A variable works locally only because it is exported in your shell.
+- CI, Docker, or another developer's machine fails because the real required variables are not documented.
+
+`envdoctor` is for that moment when you want the project to explain itself.
 
 ## Install
 
@@ -37,13 +40,13 @@ Diagnosis:
 pip install envdoctor
 ```
 
-From a checkout:
+From a local checkout:
 
 ```console
 pip install -e ".[dev]"
 ```
 
-## Usage
+## Quick Start
 
 Run a check in the current project:
 
@@ -51,10 +54,28 @@ Run a check in the current project:
 envdoctor check
 ```
 
-Check another directory:
+Try the included broken example:
 
 ```console
-envdoctor check path/to/project
+envdoctor check examples/basic
+```
+
+Show machine-readable output:
+
+```console
+envdoctor check --json
+```
+
+Fail on warnings as well as errors:
+
+```console
+envdoctor check --strict
+```
+
+`--ci` is supported as a CI-friendly alias for `--strict`:
+
+```console
+envdoctor check --ci
 ```
 
 Use custom dotenv filenames:
@@ -63,40 +84,53 @@ Use custom dotenv filenames:
 envdoctor check --env-file .env.local --example-file .env.example
 ```
 
-Emit JSON:
+## What It Checks Today
 
-```console
-envdoctor check --json
+`envdoctor check` currently inspects:
+
+- current shell environment
+- `.env`
+- `.env.example`
+- Python files using common environment variable APIs
+
+It detects:
+
+- missing keys
+- undocumented extra keys
+- duplicate keys
+- empty values
+- placeholder values like `your-key-here`, `changeme`, `todo`, and `replace-me`
+- likely typo pairs like `DB_URL` vs `DATABASE_URL`
+- required env vars used in Python code but missing from `.env.example`
+- missing `.env`
+- missing `.env.example`
+
+It scans Python code for:
+
+```python
+os.environ["DATABASE_URL"]
+os.getenv("DATABASE_URL")
+os.getenv("DATABASE_URL", "sqlite:///local.db")
+os.environ.get("DATABASE_URL", "sqlite:///local.db")
 ```
 
-Fail CI on warnings as well as errors:
+Required vs optional behavior:
 
-```console
-envdoctor check --strict
-```
+- `os.environ["KEY"]` is required
+- `os.getenv("KEY")` is required
+- `os.getenv("KEY", default)` is optional
+- `os.environ.get("KEY", default)` is optional
 
-`--ci` is also supported as a CI-friendly alias:
+## Exit Codes
 
-```console
-envdoctor check --ci
-```
+| Command | Exit code behavior |
+| --- | --- |
+| `envdoctor check` | exits `1` when errors are present |
+| `envdoctor check --strict` | exits `1` when errors or warnings are present |
+| `envdoctor check --ci` | same as `--strict` |
+| `envdoctor check --json` | same pass/fail behavior, JSON output |
 
-## What v0 Checks
-
-- Parses `.env`
-- Parses `.env.example`
-- Detects missing keys
-- Detects extra or undocumented keys
-- Detects duplicate keys
-- Detects empty values
-- Detects placeholders like `your-key-here`, `changeme`, and `todo`
-- Masks secret-like placeholder values in output
-- Detects similar-name typos like `DB_URL` vs `DATABASE_URL`
-- Checks whether missing values are present in the current shell environment
-- Scans Python AST for `os.environ["KEY"]`, `os.getenv("KEY")`, `os.getenv("KEY", default)`, and `os.environ.get("KEY", default)`
-- Reports Python file and line number
-- Returns non-zero exit codes when errors are present
-- Supports `--strict` / `--ci` to fail on warnings too
+Warnings do not fail a normal check unless `--strict` or `--ci` is used.
 
 ## CI
 
@@ -117,33 +151,81 @@ jobs:
       - run: envdoctor check --ci
 ```
 
-## Try The Example
+## Example Diagnosis
 
-```console
-envdoctor check examples/basic
+Given:
+
+```dotenv
+# .env
+DB_URL=postgres://localhost/app
+OPENAI_API_KEY=changeme
 ```
+
+```dotenv
+# .env.example
+DATABASE_URL=
+OPENAI_API_KEY=your-key-here
+```
+
+```python
+# app.py
+import os
+
+DATABASE_URL = os.environ["DATABASE_URL"]
+DEBUG = os.getenv("DEBUG", "false")
+```
+
+`envdoctor` can report:
+
+- `DATABASE_URL` is required in code but missing from `.env`
+- `DB_URL` may be a typo for `DATABASE_URL`
+- `OPENAI_API_KEY` still looks like a placeholder
+- `DEBUG` is optional because it has a default
 
 ## Why Not Just python-dotenv?
 
-`python-dotenv` loads environment variables. envdoctor explains why the variables your app expects do not match the variables your project documents and defines.
+`python-dotenv` loads environment variables.
 
-The useful question is not only "did `.env` load?" It is:
+`envdoctor` explains whether the environment variables your app expects match the variables your project defines and documents.
 
-- Which variables does my app expect?
-- Which variables are missing locally?
-- Which variables are present but undocumented?
-- Which values are placeholders?
-- Which names are probably typos?
-- Which code usage is missing from `.env.example`?
+The useful question is not only:
+
+> Did `.env` load?
+
+It is:
+
+> What does my app expect, where should it come from, and why is it missing or wrong here?
+
+## Current Scope
+
+This is intentionally a small diagnostic tool, not a config framework.
+
+In scope now:
+
+- `.env`
+- `.env.example`
+- shell environment
+- Python `os.environ` / `os.getenv` scanning
+- terminal and JSON reports
+- CI-friendly exit codes
+
+Not in scope yet:
+
+- loading or mutating your environment
+- validating every framework-specific settings pattern
+- Docker Compose parsing
+- GitHub Actions secrets parsing
+- Pydantic `BaseSettings` extraction
 
 ## Roadmap
 
-- Pydantic `BaseSettings` extraction
-- Django settings helpers
-- Docker Compose and GitHub Actions env detection
-- Precedence explanations for shell vs dotenv vs framework defaults
+- Pydantic `BaseSettings` support
+- Django settings helper detection
+- Docker Compose env detection
+- GitHub Actions env/secrets detection
+- precedence explanations for shell vs `.env` vs framework defaults
 - GitHub Actions annotations
-- Richer JSON schema for editor and CI integrations
+- richer JSON schema for editor and CI integrations
 
 ## Development
 
@@ -152,6 +234,18 @@ python -m venv .venv
 . .venv/bin/activate
 pip install -e ".[dev]"
 pytest
+```
+
+Run the example locally:
+
+```console
+envdoctor check examples/basic
+```
+
+Run the shell-aware example:
+
+```console
+DATABASE_URL=postgres://shell/app envdoctor check examples/basic
 ```
 
 ## License
