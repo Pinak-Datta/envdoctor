@@ -1,5 +1,10 @@
 # envgap
 
+[![PyPI version](https://img.shields.io/pypi/v/envgap.svg)](https://pypi.org/project/envgap/)
+[![Python versions](https://img.shields.io/pypi/pyversions/envgap.svg)](https://pypi.org/project/envgap/)
+[![CI](https://github.com/Pinak-Datta/envgap/actions/workflows/ci.yml/badge.svg)](https://github.com/Pinak-Datta/envgap/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 Find the gaps in your Python environment config.
 
 `envgap` is a diagnostic CLI for Python projects that use `.env` files, `.env.example`, shell variables, and `os.environ` / `os.getenv` in code. It does not load your config. It shows the gaps between what your app expects, what your project documents, and what your environment actually provides.
