@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.1
+
+- Fix PyPI README rendering by using an absolute screenshot URL.
+- Declare README Markdown content type in package metadata.
+
 ## 0.1.0
 
 - Initial MVP with `envgap check`.
@@ -7,4 +12,3 @@
 - Python AST scanning for common `os.environ` and `os.getenv` usage.
 - Missing, duplicate, placeholder, undocumented, and possible-typo findings.
 - Terminal and JSON reporters.
-
