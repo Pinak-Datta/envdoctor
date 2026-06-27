@@ -5,15 +5,26 @@
 [![CI](https://github.com/Pinak-Datta/envgap/actions/workflows/ci.yml/badge.svg)](https://github.com/Pinak-Datta/envgap/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Find the gaps in your Python environment config.
+Find gaps between `.env`, `.env.example`, shell variables, and Python code.
 
 `envgap` is a diagnostic CLI for Python projects that use `.env` files, `.env.example`, shell variables, and `os.environ` / `os.getenv` in code. It does not load your config. It shows the gaps between what your app expects, what your project documents, and what your environment actually provides.
 
-![envgap terminal diagnosis screenshot](https://raw.githubusercontent.com/Pinak-Datta/envgap/main/docs/assets/envgap-terminal.svg)
+![envgap animated terminal demo](https://raw.githubusercontent.com/Pinak-Datta/envgap/main/docs/assets/envgap-demo.gif)
+
+## Why Developers Try It
+
+- Catch missing env vars before CI, Docker, or another developer's machine fails.
+- Spot stale `.env.example` files that no longer match real code.
+- Find typo-shaped drift like `DB_URL` vs `DATABASE_URL`.
+- Detect placeholder secrets such as `changeme`, `todo`, and `your-key-here`.
+- Add a lightweight config check to CI without adopting a new settings framework.
+
+`envgap` is intentionally not a `.env` loader. It is the tool you run when you want the project to explain why config works in one place and breaks somewhere else.
 
 ## Contents
 
 - [30-Second Demo](#30-second-demo)
+- [When It Helps](#when-it-helps)
 - [Why](#why)
 - [Install](#install)
 - [Quick Start](#quick-start)
@@ -24,6 +35,7 @@ Find the gaps in your Python environment config.
 - [Why Not Just python-dotenv?](#why-not-just-python-dotenv)
 - [Current Scope](#current-scope)
 - [Roadmap](#roadmap)
+- [Contributing](#contributing)
 - [Development](#development)
 
 ## 30-Second Demo
@@ -67,6 +79,18 @@ Diagnosis:
     ~ Possible typo: DB_URL may be a typo for DATABASE_URL (.env:1)
       Suggested fix: Rename DB_URL to DATABASE_URL if they represent the same setting.
 ```
+
+## When It Helps
+
+Use envgap when a Python project has config spread across:
+
+- local `.env`
+- documented `.env.example`
+- shell exports
+- Python code
+- CI or Docker conventions
+
+It is especially useful for Python backend projects, FastAPI/Django/Flask apps, AI/data apps with API keys, and open-source projects where `.env.example` must stay useful for new contributors.
 
 ## Why
 
@@ -287,6 +311,21 @@ Not in scope yet:
 - precedence explanations for shell vs `.env` vs framework defaults
 - GitHub Actions annotations
 - richer JSON schema for editor and CI integrations
+
+See the [full roadmap](docs/ROADMAP.md).
+
+## Contributing
+
+Real-world config examples are the most useful contribution right now.
+
+Good first contributions:
+
+- report a false positive with a tiny redacted example
+- add a missing framework pattern
+- improve docs for CI, FastAPI, Django, or Docker users
+- add tests for typo detection edge cases
+
+See [CONTRIBUTING.md](CONTRIBUTING.md), [SUPPORT.md](SUPPORT.md), and the [GitHub growth kit](docs/GITHUB_GROWTH_KIT.md).
 
 ## Development
 

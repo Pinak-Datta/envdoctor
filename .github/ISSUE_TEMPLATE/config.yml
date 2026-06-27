@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Questions and ideas
+    url: https://github.com/Pinak-Datta/envgap/discussions
+    about: Ask questions, share project shapes, or discuss config drift patterns.
