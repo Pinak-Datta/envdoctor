@@ -325,7 +325,7 @@ Good first contributions:
 - improve docs for CI, FastAPI, Django, or Docker users
 - add tests for typo detection edge cases
 
-See [CONTRIBUTING.md](CONTRIBUTING.md), [SUPPORT.md](SUPPORT.md), and the [GitHub growth kit](docs/GITHUB_GROWTH_KIT.md).
+See [CONTRIBUTING.md](CONTRIBUTING.md) and [SUPPORT.md](SUPPORT.md).
 
 ## Development
 
