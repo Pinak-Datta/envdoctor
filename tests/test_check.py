@@ -90,6 +90,32 @@ def test_optional_code_usage_does_not_fail_when_absent(tmp_path: Path) -> None:
     assert not any(finding.key == "DEBUG" for finding in result.findings)
 
 
+def test_pydantic_settings_required_fields_are_expected(tmp_path: Path) -> None:
+    (tmp_path / ".env.example").write_text("DATABASE_URL=\n", encoding="utf-8")
+    (tmp_path / ".env").write_text("", encoding="utf-8")
+    (tmp_path / "settings.py").write_text(
+        "\n".join(
+            [
+                "from pydantic_settings import BaseSettings",
+                "",
+                "class Settings(BaseSettings):",
+                "    database_url: str",
+                "    debug: bool = False",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_check(tmp_path, environ={})
+
+    assert any(finding.code == "missing_key" and finding.key == "DATABASE_URL" for finding in result.findings)
+    assert not any(
+        finding.code == "code_missing_from_example" and finding.key == "DATABASE_URL"
+        for finding in result.findings
+    )
+    assert not any(finding.key == "DEBUG" and finding.code == "missing_key" for finding in result.findings)
+
+
 def test_missing_env_file_is_reported(tmp_path: Path) -> None:
     (tmp_path / ".env.example").write_text("DATABASE_URL=\n", encoding="utf-8")
 

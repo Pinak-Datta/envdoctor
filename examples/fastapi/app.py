@@ -1,16 +1,18 @@
-import os
+from pydantic_settings import BaseSettings
+
+
+class Settings(BaseSettings):
+    database_url: str
+    openai_api_key: str
+    redis_url: str
+    debug: bool = False
 
 
 def create_app():
-    database_url = os.environ["DATABASE_URL"]
-    openai_api_key = os.environ["OPENAI_API_KEY"]
-    redis_url = os.getenv("REDIS_URL")
-    debug = os.getenv("DEBUG", "false")
-
+    settings = Settings()
     return {
-        "database_url": database_url,
-        "openai_api_key": openai_api_key,
-        "redis_url": redis_url,
-        "debug": debug,
+        "database_url": settings.database_url,
+        "openai_api_key": settings.openai_api_key,
+        "redis_url": settings.redis_url,
+        "debug": settings.debug,
     }
-

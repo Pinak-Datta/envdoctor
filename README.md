@@ -176,6 +176,7 @@ envgap check --env-file .env.local --example-file .env.example
 - `.env`
 - `.env.example`
 - Python files using common environment variable APIs
+- Pydantic `BaseSettings` fields used by FastAPI-style settings modules
 
 It detects:
 
@@ -186,6 +187,7 @@ It detects:
 - placeholder values like `your-key-here`, `changeme`, `todo`, and `replace-me`
 - likely typo pairs like `DB_URL` vs `DATABASE_URL`
 - required env vars used in Python code but missing from `.env.example`
+- required Pydantic settings fields missing from `.env` or `.env.example`
 - missing `.env`
 - missing `.env.example`
 
@@ -198,12 +200,25 @@ os.getenv("DATABASE_URL", "sqlite:///local.db")
 os.environ.get("DATABASE_URL", "sqlite:///local.db")
 ```
 
+It also scans Pydantic Settings classes:
+
+```python
+from pydantic_settings import BaseSettings
+
+class Settings(BaseSettings):
+    database_url: str
+    openai_api_key: str
+    debug: bool = False
+```
+
 Required vs optional behavior:
 
 - `os.environ["KEY"]` is required
 - `os.getenv("KEY")` is required
 - `os.getenv("KEY", default)` is optional
 - `os.environ.get("KEY", default)` is optional
+- `BaseSettings` fields without defaults are required
+- `BaseSettings` fields with defaults are optional
 
 ## Exit Codes
 
@@ -297,14 +312,14 @@ In scope now:
 Not in scope yet:
 
 - loading or mutating your environment
-- validating every framework-specific settings pattern
+- validating every framework-specific settings edge case
 - Docker Compose parsing
 - GitHub Actions secrets parsing
-- Pydantic `BaseSettings` extraction
+- Pydantic aliases, prefixes, and nested settings
 
 ## Roadmap
 
-- Pydantic `BaseSettings` support
+- Pydantic aliases, prefixes, and nested settings
 - Django settings helper detection
 - Docker Compose env detection
 - GitHub Actions env/secrets detection

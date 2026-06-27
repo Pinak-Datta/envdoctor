@@ -85,6 +85,11 @@ class _EnvVisitor(ast.NodeVisitor):
             )
         self.generic_visit(node)
 
+    def visit_ClassDef(self, node: ast.ClassDef) -> None:
+        if _inherits_base_settings(node):
+            self.usages.extend(_settings_field_usages(node, self.path))
+        self.generic_visit(node)
+
 
 def _is_os_environ(node: ast.AST) -> bool:
     return (
@@ -118,3 +123,80 @@ def _string_literal(node: ast.AST) -> str | None:
     if isinstance(node, ast.Constant) and isinstance(node.value, str):
         return node.value
     return None
+
+
+def _inherits_base_settings(node: ast.ClassDef) -> bool:
+    return any(_base_name(base) == "BaseSettings" for base in node.bases)
+
+
+def _base_name(node: ast.AST) -> str | None:
+    if isinstance(node, ast.Name):
+        return node.id
+    if isinstance(node, ast.Attribute):
+        return node.attr
+    if isinstance(node, ast.Subscript):
+        return _base_name(node.value)
+    return None
+
+
+def _settings_field_usages(node: ast.ClassDef, path: Path) -> list[CodeUsage]:
+    usages: list[CodeUsage] = []
+    for statement in node.body:
+        if not isinstance(statement, ast.AnnAssign):
+            continue
+        if not isinstance(statement.target, ast.Name):
+            continue
+        field_name = statement.target.id
+        if field_name.startswith("_") or _is_class_var(statement.annotation):
+            continue
+        key = field_name.upper()
+        required = _settings_field_required(statement.value)
+        usages.append(
+            CodeUsage(
+                key=key,
+                path=path,
+                line=statement.lineno,
+                required=required,
+                source=f"{node.name}.{field_name} (Pydantic BaseSettings)",
+            )
+        )
+    return usages
+
+
+def _settings_field_required(value: ast.AST | None) -> bool:
+    if value is None:
+        return True
+    if _is_ellipsis(value):
+        return True
+    if isinstance(value, ast.Call) and _call_name(value.func) == "Field":
+        return _field_call_required(value)
+    return False
+
+
+def _field_call_required(node: ast.Call) -> bool:
+    default_keyword = next((kw for kw in node.keywords if kw.arg == "default"), None)
+    if default_keyword:
+        return _is_ellipsis(default_keyword.value)
+    if any(kw.arg == "default_factory" for kw in node.keywords):
+        return False
+    if node.args:
+        return _is_ellipsis(node.args[0])
+    return True
+
+
+def _call_name(node: ast.AST) -> str | None:
+    if isinstance(node, ast.Name):
+        return node.id
+    if isinstance(node, ast.Attribute):
+        return node.attr
+    return None
+
+
+def _is_ellipsis(node: ast.AST) -> bool:
+    return isinstance(node, ast.Constant) and node.value is Ellipsis
+
+
+def _is_class_var(node: ast.AST) -> bool:
+    if isinstance(node, ast.Subscript):
+        return _base_name(node.value) == "ClassVar"
+    return _base_name(node) == "ClassVar"

@@ -27,3 +27,42 @@ def test_scan_python_env_usage_classifies_required_and_optional(tmp_path: Path) 
     assert by_key["CACHE_URL"].required is False
     assert by_key["DATABASE_URL"].line == 2
 
+
+def test_scan_python_env_usage_detects_pydantic_base_settings_fields(tmp_path: Path) -> None:
+    app = tmp_path / "settings.py"
+    app.write_text(
+        "\n".join(
+            [
+                "from typing import ClassVar",
+                "from pydantic import Field",
+                "from pydantic_settings import BaseSettings",
+                "",
+                "class Settings(BaseSettings):",
+                "    database_url: str",
+                "    openai_api_key: str = Field(...)",
+                "    redis_url: str = Field(default=...)",
+                '    debug: bool = False',
+                '    cache_url: str = Field("memory://")',
+                "    retries: int = Field(default=3)",
+                "    tags: list[str] = Field(default_factory=list)",
+                '    model_name: ClassVar[str] = "Settings"',
+                '    _private: str = "ignored"',
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    usages = scan_python_env_usage(tmp_path)
+    by_key = {usage.key: usage for usage in usages}
+
+    assert by_key["DATABASE_URL"].required is True
+    assert by_key["OPENAI_API_KEY"].required is True
+    assert by_key["REDIS_URL"].required is True
+    assert by_key["DEBUG"].required is False
+    assert by_key["CACHE_URL"].required is False
+    assert by_key["RETRIES"].required is False
+    assert by_key["TAGS"].required is False
+    assert by_key["DATABASE_URL"].line == 6
+    assert by_key["DATABASE_URL"].source == "Settings.database_url (Pydantic BaseSettings)"
+    assert "MODEL_NAME" not in by_key
+    assert "_PRIVATE" not in by_key
