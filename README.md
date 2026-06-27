@@ -354,10 +354,6 @@ Run the shell-aware example:
 DATABASE_URL=postgres://shell/app envgap check examples/basic
 ```
 
-## Launch Notes
-
-Release notes and launch post drafts live in [`docs/launch`](docs/launch).
-
 ## License
 
 MIT
