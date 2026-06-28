@@ -166,22 +166,39 @@ def _settings_field_usages(node: ast.ClassDef, path: Path) -> list[CodeUsage]:
 
 
 def _settings_env_prefix(node: ast.ClassDef) -> str:
+    env_prefix = ""
     for statement in node.body:
-        value: ast.AST | None = None
-        if isinstance(statement, ast.Assign) and any(
-            isinstance(target, ast.Name) and target.id == "model_config" for target in statement.targets
-        ):
-            value = statement.value
-        elif isinstance(statement, ast.AnnAssign) and isinstance(statement.target, ast.Name) and statement.target.id == "model_config":
-            value = statement.value
-        if not isinstance(value, ast.Call):
+        value = _model_config_value(statement)
+        if value is None:
             continue
-        if _call_name(value.func) != "SettingsConfigDict":
-            continue
-        env_prefix = _string_keyword(value, "env_prefix")
-        if env_prefix is not None:
-            return env_prefix
-    return ""
+        parsed = _config_env_prefix(value)
+        if isinstance(parsed, str):
+            env_prefix = parsed
+    return env_prefix
+
+
+def _model_config_value(statement: ast.stmt) -> ast.AST | None:
+    if isinstance(statement, ast.Assign) and any(
+        isinstance(target, ast.Name) and target.id == "model_config" for target in statement.targets
+    ):
+        return statement.value
+    if isinstance(statement, ast.AnnAssign) and isinstance(statement.target, ast.Name) and statement.target.id == "model_config":
+        return statement.value
+    return None
+
+
+_UNKNOWN_CONFIG = object()
+
+
+def _config_env_prefix(value: ast.AST) -> str | object | None:
+    if isinstance(value, ast.Call) and _call_name(value.func) in {"SettingsConfigDict", "ConfigDict"}:
+        return _string_keyword(value, "env_prefix") or ""
+    if isinstance(value, ast.Dict):
+        for key, item in zip(value.keys, value.values):
+            if key is not None and _string_literal(key) == "env_prefix":
+                return _string_literal(item) or ""
+        return ""
+    return _UNKNOWN_CONFIG
 
 
 def _settings_field_aliases(value: ast.AST | None) -> list[str]:
