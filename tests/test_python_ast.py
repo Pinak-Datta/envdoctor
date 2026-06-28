@@ -66,3 +66,41 @@ def test_scan_python_env_usage_detects_pydantic_base_settings_fields(tmp_path: P
     assert by_key["DATABASE_URL"].source == "Settings.database_url (Pydantic BaseSettings)"
     assert "MODEL_NAME" not in by_key
     assert "_PRIVATE" not in by_key
+
+
+def test_scan_python_env_usage_applies_pydantic_env_prefix_and_aliases(tmp_path: Path) -> None:
+    app = tmp_path / "settings.py"
+    app.write_text(
+        "\n".join(
+            [
+                "from pydantic import AliasChoices, Field",
+                "from pydantic_settings import BaseSettings, SettingsConfigDict",
+                "",
+                "class Settings(BaseSettings):",
+                '    model_config: SettingsConfigDict = SettingsConfigDict(env_prefix="APP_")',
+                "",
+                "    database_url: str",
+                '    openai_api_key: str = Field(alias="OPENAI_KEY")',
+                '    anthropic_api_key: str = Field(validation_alias="ANTHROPIC_KEY")',
+                '    preferred_key: str = Field(alias="PREFERRED_ALIAS", validation_alias="PREFERRED_VALIDATION_ALIAS")',
+                '    fallback_key: str = Field(validation_alias=AliasChoices("FALLBACK_KEY", "LEGACY_FALLBACK_KEY"))',
+                '    optional_token: str = Field("", alias="OPTIONAL_TOKEN")',
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    usages = scan_python_env_usage(tmp_path)
+    by_key = {usage.key: usage for usage in usages}
+
+    assert by_key["APP_DATABASE_URL"].required is True
+    assert by_key["OPENAI_KEY"].required is True
+    assert by_key["ANTHROPIC_KEY"].required is True
+    assert by_key["PREFERRED_VALIDATION_ALIAS"].required is True
+    assert by_key["FALLBACK_KEY"].required is True
+    assert by_key["LEGACY_FALLBACK_KEY"].required is True
+    assert by_key["OPTIONAL_TOKEN"].required is False
+    assert "DATABASE_URL" not in by_key
+    assert "APP_MODEL_CONFIG" not in by_key
+    assert "APP_OPENAI_API_KEY" not in by_key
+    assert "PREFERRED_ALIAS" not in by_key

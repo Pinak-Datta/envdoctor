@@ -141,26 +141,75 @@ def _base_name(node: ast.AST) -> str | None:
 
 def _settings_field_usages(node: ast.ClassDef, path: Path) -> list[CodeUsage]:
     usages: list[CodeUsage] = []
+    env_prefix = _settings_env_prefix(node)
     for statement in node.body:
         if not isinstance(statement, ast.AnnAssign):
             continue
         if not isinstance(statement.target, ast.Name):
             continue
         field_name = statement.target.id
-        if field_name.startswith("_") or _is_class_var(statement.annotation):
+        if field_name == "model_config" or field_name.startswith("_") or _is_class_var(statement.annotation):
             continue
-        key = field_name.upper()
+        keys = _settings_field_aliases(statement.value) or [f"{env_prefix}{field_name.upper()}"]
         required = _settings_field_required(statement.value)
-        usages.append(
-            CodeUsage(
-                key=key,
-                path=path,
-                line=statement.lineno,
-                required=required,
-                source=f"{node.name}.{field_name} (Pydantic BaseSettings)",
+        for key in keys:
+            usages.append(
+                CodeUsage(
+                    key=key,
+                    path=path,
+                    line=statement.lineno,
+                    required=required,
+                    source=f"{node.name}.{field_name} (Pydantic BaseSettings)",
+                )
             )
-        )
     return usages
+
+
+def _settings_env_prefix(node: ast.ClassDef) -> str:
+    for statement in node.body:
+        value: ast.AST | None = None
+        if isinstance(statement, ast.Assign) and any(
+            isinstance(target, ast.Name) and target.id == "model_config" for target in statement.targets
+        ):
+            value = statement.value
+        elif isinstance(statement, ast.AnnAssign) and isinstance(statement.target, ast.Name) and statement.target.id == "model_config":
+            value = statement.value
+        if not isinstance(value, ast.Call):
+            continue
+        if _call_name(value.func) != "SettingsConfigDict":
+            continue
+        env_prefix = _string_keyword(value, "env_prefix")
+        if env_prefix is not None:
+            return env_prefix
+    return ""
+
+
+def _settings_field_aliases(value: ast.AST | None) -> list[str]:
+    if not isinstance(value, ast.Call) or _call_name(value.func) != "Field":
+        return []
+    validation_aliases = _alias_keyword_values(value, "validation_alias")
+    if validation_aliases:
+        return validation_aliases
+    return _alias_keyword_values(value, "alias")
+
+
+def _alias_keyword_values(node: ast.Call, name: str) -> list[str]:
+    keyword = next((kw for kw in node.keywords if kw.arg == name), None)
+    if keyword is None:
+        return []
+    literal = _string_literal(keyword.value)
+    if literal is not None:
+        return [literal]
+    if isinstance(keyword.value, ast.Call) and _call_name(keyword.value.func) == "AliasChoices":
+        return [value for arg in keyword.value.args if (value := _string_literal(arg)) is not None]
+    return []
+
+
+def _string_keyword(node: ast.Call, name: str) -> str | None:
+    keyword = next((kw for kw in node.keywords if kw.arg == name), None)
+    if keyword is None:
+        return None
+    return _string_literal(keyword.value)
 
 
 def _settings_field_required(value: ast.AST | None) -> bool:
