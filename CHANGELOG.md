@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.1
+
+- Support Pydantic Settings aliases and validation aliases.
+- Support common `env_prefix` declarations in Pydantic Settings config.
+- Add typo-detection coverage for common abbreviations.
+- Add README comparison with related config tools.
+
 ## 0.2.0
 
 - Add Pydantic `BaseSettings` field detection.
