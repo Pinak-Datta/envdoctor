@@ -9,7 +9,7 @@ Find gaps between `.env`, `.env.example`, shell variables, and Python code.
 
 `envgap` is a diagnostic CLI for Python projects that use `.env` files, `.env.example`, shell variables, and `os.environ` / `os.getenv` in code. It does not load your config. It shows the gaps between what your app expects, what your project documents, and what your environment actually provides.
 
-New in v0.2: envgap detects Pydantic `BaseSettings` fields, aliases, and env prefixes for FastAPI-style projects.
+envgap detects Pydantic `BaseSettings` fields, aliases, and env prefixes for FastAPI-style projects.
 
 ![envgap animated terminal demo](https://raw.githubusercontent.com/Pinak-Datta/envgap/main/docs/assets/envgap-demo.gif)
 
@@ -319,6 +319,7 @@ In scope now:
 - `.env.example`
 - shell environment
 - Python `os.environ` / `os.getenv` scanning
+- Pydantic `BaseSettings` field, alias, and env prefix detection
 - terminal and JSON reports
 - CI-friendly exit codes
 
